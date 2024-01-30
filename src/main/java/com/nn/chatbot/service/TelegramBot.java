@@ -1,6 +1,7 @@
 package com.nn.chatbot.service;
 
 import com.nn.chatbot.config.BotConfig;
+import com.nn.chatbot.model.CashFlow;
 import com.nn.chatbot.utils.MessageParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +53,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessage("Формат ввода данных <+/-> <цена> <статья затра> <номер заказа>", chatId);
                 }
                 default -> {
-
-                    MessageParser.parse(messageText);
+                    List<CashFlow> cashFlowList = MessageParser.parse(messageText);
                 }
 
             }
