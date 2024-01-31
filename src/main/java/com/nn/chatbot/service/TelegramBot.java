@@ -1,6 +1,7 @@
 package com.nn.chatbot.service;
 
 import com.nn.chatbot.config.BotConfig;
+import com.nn.chatbot.googleConfig.SheetsQuickstart;
 import com.nn.chatbot.model.CashFlow;
 import com.nn.chatbot.utils.MessageParser;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,8 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,9 +25,11 @@ import java.util.List;
 @Slf4j
 public class TelegramBot extends TelegramLongPollingBot {
 
-    BotConfig botConfig;
+    private  final SheetsQuickstart sheetsQuickstart;
+    private  final BotConfig botConfig;
 
-    public TelegramBot(BotConfig botConfig){
+    public TelegramBot(SheetsQuickstart sheetsQuickstart, BotConfig botConfig){
+        this.sheetsQuickstart = sheetsQuickstart;
         this.botConfig = botConfig;
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "Добрый вечер"));
@@ -54,6 +59,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
                 default -> {
                     List<CashFlow> cashFlowList = MessageParser.parse(messageText);
+                    try {
+                        sheetsQuickstart.addArrival(cashFlowList);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (GeneralSecurityException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
 
             }
