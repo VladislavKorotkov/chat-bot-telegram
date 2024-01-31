@@ -2,15 +2,17 @@ package com.nn.chatbot.utils;
 
 import com.nn.chatbot.model.CashFlow;
 import com.nn.chatbot.model.TypeCashFlow;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class MessageParser {
     public static List<CashFlow> parse(String text) {
-        String result = "Данные успешно добавлены";
         List<CashFlow> cashFlows = new ArrayList<>();
         try{
             int balance = 0;
@@ -19,7 +21,7 @@ public class MessageParser {
 
             String[] lines = text.split("\\n");
             for (String line : lines) {
-                line = line.trim(); // Удаляем лишние пробелы в начале и конце строки
+                line = line.trim();
                 if (line.startsWith("Остаток")) {
                     String[] parts = line.split("\\s+");
                     balance = Integer.parseInt(parts[1]);
@@ -28,7 +30,7 @@ public class MessageParser {
                     if (matcher.find()) {
                         TypeCashFlow type = matcher.group(1).equals("+") ? TypeCashFlow.ARRIVAL : TypeCashFlow.EXPENDITURE;
                         double price = Double.parseDouble(matcher.group(2));
-                        String description = matcher.group(3).trim(); // Удаляем лишние пробелы в начале и конце описания
+                        String description = matcher.group(3).trim();
                         int orderNumber = matcher.group(4) != null ? Integer.parseInt(matcher.group(4)) : 0;
 
                         CashFlow cashFlow = new CashFlow(type, price, description, orderNumber);
@@ -36,16 +38,9 @@ public class MessageParser {
                     }
                 }
             }
-
-            System.out.println("Cash Flows:");
-            for (CashFlow cashFlow : cashFlows) {
-                System.out.println(cashFlow);
-            }
-
-            System.out.println("Balance: " + balance);
         }
         catch (Exception e){
-            result = "Произошла ошибка";
+            log.error(Arrays.toString(e.getStackTrace()));
         }
         return cashFlows;
     }

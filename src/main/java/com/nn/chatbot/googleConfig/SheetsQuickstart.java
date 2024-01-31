@@ -16,7 +16,7 @@ import com.google.api.services.sheets.v4.model.*;
 import com.nn.chatbot.model.CashFlow;
 import com.nn.chatbot.model.TypeCashFlow;
 import org.springframework.stereotype.Component;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,16 +27,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
-
 
 @Component
 public class SheetsQuickstart {
     private final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
     private final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private final String TOKENS_DIRECTORY_PATH = "tokens/path";
-    private final String SPREADSHEET_ID = "1c0T957ZAmOc49JoW3x8HQ3TXuDIdGL0vlrBCZStUMS0";
-    private static final String SHEET_NAME = "Test";
+    @Value("${google.spread.sheets.id}")
+    private String SPREADSHEET_ID;
+    @Value("${google.sheet.name}")
+    private String SHEET_NAME;
     private final List<String> SCOPES =
             Collections.singletonList(SheetsScopes.SPREADSHEETS);
     private final String CREDENTIALS_FILE_PATH = "/credentials.json";
@@ -68,15 +68,13 @@ public class SheetsQuickstart {
     public void addArrival(List<CashFlow> cashFlows) throws IOException, GeneralSecurityException {
         Sheets sheetsService = getSheets();
         LocalDate localDate = LocalDate.now();
-        // Создание объекта ValueRange для хранения данных ARRIVED
+
         ValueRange arrivedValueRange = new ValueRange();
         List<List<Object>> arrivedValues = new ArrayList<>();
 
-        // Создание объекта ValueRange для хранения данных EXPENDITURE
         ValueRange expenditureValueRange = new ValueRange();
         List<List<Object>> expenditureValues = new ArrayList<>();
 
-        // Преобразование каждого объекта CashFlow в список значений и добавление в соответствующую таблицу
         for (CashFlow cashFlow : cashFlows) {
             List<Object> rowValues = Arrays.asList(
                     localDate.toString(),
@@ -96,11 +94,9 @@ public class SheetsQuickstart {
         arrivedValueRange.setValues(arrivedValues);
         expenditureValueRange.setValues(expenditureValues);
 
-        // Определение диапазонов целевых таблиц
         String arrivedRange = SHEET_NAME + "!A2:E" + (arrivedValues.size() + 1);  // +1 для заголовка столбцов
         String expenditureRange = SHEET_NAME + "!G2:K" + (expenditureValues.size() + 1);  // +1 для заголовка столбцов
 
-        // Выполнение запросов на добавление данных
         sheetsService.spreadsheets().values()
                 .append(SPREADSHEET_ID, arrivedRange, arrivedValueRange)
                 .setValueInputOption("RAW")
@@ -111,5 +107,4 @@ public class SheetsQuickstart {
                 .setValueInputOption("RAW")
                 .execute();
     }
-
 }

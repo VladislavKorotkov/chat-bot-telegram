@@ -51,39 +51,41 @@ public class TelegramBot extends TelegramLongPollingBot {
             switch (messageText) {
 
                 case "/start" -> {
-                    sendMessage("Начало чата", chatId);
+                    sendMessage("Данный бот предназначен для учета прихода/расхода", chatId);
 
                 }
                 case "/help" -> {
-                    sendMessage("Формат ввода данных <+/-> <цена> <статья затра> <номер заказа>", chatId);
+                    sendMessage("Формат ввода данных <+/->  <цена>  <примечание>  <номер заказа>", chatId);
                 }
                 default -> {
                     List<CashFlow> cashFlowList = MessageParser.parse(messageText);
-                    try {
-                        sheetsQuickstart.addArrival(cashFlowList);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (GeneralSecurityException e) {
-                        throw new RuntimeException(e);
+                    String message = "Данные успешно записаны";
+                    if(cashFlowList.isEmpty()){
+                        message = "Введите сообщение в заданном формате, просмотрите команду /help";
                     }
+                    else {
+                        try {
+                            sheetsQuickstart.addArrival(cashFlowList);
+                        } catch (Exception e) {
+                            log.error(Arrays.toString(e.getStackTrace()));
+                            message = "Внутренняя ошибка сервера";
+                        }
+                    }
+                    sendMessage(message, chatId);
                 }
-
             }
-
         }
-
-
     }
 
     private void sendMessage(String textToSend, long chatId) {
-        SendMessage message = new SendMessage(); // Create a message object object
+        SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
         send(message);
     }
     private void send(SendMessage msg) {
         try {
-            execute(msg); // Sending our message object to user
+            execute(msg);
         } catch (TelegramApiException e) {
             log.error(Arrays.toString(e.getStackTrace()));
         }
