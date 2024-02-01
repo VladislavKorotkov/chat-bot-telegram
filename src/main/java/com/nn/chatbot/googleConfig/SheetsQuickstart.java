@@ -15,6 +15,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
 import com.nn.chatbot.model.CashFlow;
 import com.nn.chatbot.model.TypeCashFlow;
+import com.nn.chatbot.utils.MapInitializer;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
 import java.io.FileNotFoundException;
@@ -23,10 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class SheetsQuickstart {
@@ -40,6 +38,12 @@ public class SheetsQuickstart {
     private final List<String> SCOPES =
             Collections.singletonList(SheetsScopes.SPREADSHEETS);
     private final String CREDENTIALS_FILE_PATH = "/credentials.json";
+
+    private MapInitializer mapInitializer;
+
+    public SheetsQuickstart(MapInitializer mapInitializer) {
+        this.mapInitializer = mapInitializer;
+    }
 
     private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
             throws IOException {
@@ -66,6 +70,7 @@ public class SheetsQuickstart {
     }
 
     public void addArrival(List<CashFlow> cashFlows) throws IOException, GeneralSecurityException {
+        Map<Integer, String> divisions = mapInitializer.initializeMapFromPropertiesFile();
         Sheets sheetsService = getSheets();
         LocalDate localDate = LocalDate.now();
 
@@ -76,12 +81,15 @@ public class SheetsQuickstart {
         List<List<Object>> expenditureValues = new ArrayList<>();
 
         for (CashFlow cashFlow : cashFlows) {
+            int firstDigit = Integer.parseInt(String.valueOf(cashFlow.getOrder_number()).substring(0, 1));
+            String department =  divisions.getOrDefault(firstDigit, "Не определено");
+
             List<Object> rowValues = Arrays.asList(
                     localDate.toString(),
                     cashFlow.getPrice(),
                     cashFlow.getDescription(),
                     cashFlow.getOrder_number(),
-                    "null"
+                    department
             );
 
             if (cashFlow.getTypeCashFlow() == TypeCashFlow.ARRIVAL) {
