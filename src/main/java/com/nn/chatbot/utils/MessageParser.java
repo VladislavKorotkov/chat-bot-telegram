@@ -36,6 +36,9 @@ public class MessageParser {
                         CashFlow cashFlow = new CashFlow(type, price, description, orderNumber);
                         cashFlows.add(cashFlow);
                     }
+                    else{
+                        log.info(line);
+                    }
                 }
             }
         }

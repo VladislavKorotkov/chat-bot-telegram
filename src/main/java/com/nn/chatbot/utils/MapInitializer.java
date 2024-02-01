@@ -10,7 +10,6 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +38,7 @@ public class MapInitializer {
                 map.put(key, value);
             }
         } catch (Exception e) {
-            log.error(Arrays.toString(e.getStackTrace()));
+            log.error(e.getMessage());
         }
 
         return map;
