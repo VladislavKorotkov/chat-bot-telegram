@@ -6,6 +6,8 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -13,6 +15,9 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.*;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.nn.chatbot.model.CashFlow;
 import com.nn.chatbot.model.TypeCashFlow;
 import com.nn.chatbot.utils.MapInitializer;
@@ -35,36 +40,42 @@ public class SheetsQuickstart {
     private String SPREADSHEET_ID;
     @Value("${google.sheet.name}")
     private String SHEET_NAME;
-    private final List<String> SCOPES =
+    private static final List<String> SCOPES =
             Collections.singletonList(SheetsScopes.SPREADSHEETS);
     private final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
     private MapInitializer mapInitializer;
 
+    private static HttpTransport HTTP_TRANSPORT;
+
+    static {
+        try {
+            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+
     public SheetsQuickstart(MapInitializer mapInitializer) {
         this.mapInitializer = mapInitializer;
     }
 
-    private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
-            throws IOException {
-        InputStream in = SheetsQuickstart.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-        if (in == null) {
-            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
-        }
-        GoogleClientSecrets clientSecrets =
-                GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-                .setAccessType("offline")
-                .build();
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+    public static GoogleCredentials authorize() throws IOException {
+        // Load service account key.
+        InputStream in = SheetsQuickstart.class.getResourceAsStream("/key.json");
+
+        // Create the credential scoped to the zero-touch enrollment customer APIs.
+        GoogleCredentials credential = ServiceAccountCredentials.fromStream(in).createScoped(SCOPES);
+        return credential;
     }
 
     private Sheets getSheets() throws GeneralSecurityException, IOException {
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+//        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        GoogleCredentials credential = authorize();
+        HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credential);
+        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, requestInitializer)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
