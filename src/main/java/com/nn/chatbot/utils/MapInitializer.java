@@ -17,8 +17,8 @@ import java.util.Map;
 @Component
 public class MapInitializer {
 
-    @Value("${Divisions.filepath}")
-    public String filePath;
+//    @Value("${Divisions.filepath}")
+    public String filePath = "Divisions.xml";
     public Map<Integer, String> initializeMapFromPropertiesFile() {
         Map<Integer, String> map = new HashMap<>();
 
