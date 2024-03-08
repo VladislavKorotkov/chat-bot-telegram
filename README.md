@@ -12,7 +12,7 @@
 - Docker
 
 ## Features
-- Parsing a message like: +/- <cost> <description> <order>
+- Parsing a message like: +/- cost description order
 - Saving to Google Tables
 - Integration with 1С (not implemented)
 
