@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
@@ -84,7 +85,7 @@ public class SheetsQuickstart {
         Map<Integer, String> divisions = mapInitializer.initializeMapFromPropertiesFile();
         Sheets sheetsService = getSheets();
         LocalDate localDate = LocalDate.now();
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         ValueRange arrivedValueRange = new ValueRange();
         List<List<Object>> arrivedValues = new ArrayList<>();
 
@@ -93,10 +94,10 @@ public class SheetsQuickstart {
 
         for (CashFlow cashFlow : cashFlows) {
             int firstDigit = Integer.parseInt(String.valueOf(cashFlow.getOrder_number()).substring(0, 1));
-            String department =  divisions.getOrDefault(firstDigit, "Не определено");
+            String department =  divisions.getOrDefault(firstDigit, "");
 
             List<Object> rowValues = Arrays.asList(
-                    localDate.toString(),
+                    localDate.format(formatter),
                     cashFlow.getPrice(),
                     cashFlow.getDescription(),
                     cashFlow.getOrder_number(),
