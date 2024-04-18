@@ -25,3 +25,7 @@ git clone https://github.com/VladislavKorotkov/chat-bot-telegram.git
 # start the server
 mvn spring-boot:run
 ```
+
+## Screenshots
+![image(1)](https://github.com/VladislavKorotkov/chat-bot-telegram/assets/146270174/ecb5753c-dc6d-4b44-ac39-13bbcb24edff)
+![image](https://github.com/VladislavKorotkov/chat-bot-telegram/assets/146270174/b5960ed8-e57c-4db3-a2c3-67363e9bd128)
